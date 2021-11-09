@@ -1,0 +1,14 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+.m-r-4 {
+    margin-right: 4px;
+}
+
+button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+  }
