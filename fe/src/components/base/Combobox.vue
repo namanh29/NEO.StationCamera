@@ -1,21 +1,18 @@
 <template>
-  <div
-    class="combobox"
-    @keydown="keyEvent($event)"
-  >
+  <div class="combobox" @keydown="keyEvent($event)">
     <input
       class="combobox-text"
       type="text"
       v-model="cbxInput"
       @input="autocomplete"
+      ref="BaseInput"
     />
     <button @click="toggleList">
-      <div class="icon-button" :class="{ reverse: isShow }"><i class="fas fa-chevron-down"></i></div>
+      <div class="icon-button" :class="{ reverse: isShow }">
+        <i class="fas fa-chevron-down"></i>
+      </div>
     </button>
-    <div
-      v-if="isShow"
-      class="combobox-list"
-    >
+    <div v-if="isShow" class="combobox-list">
       <div
         class="combobox-item"
         v-for="(cbxItem, index) in cbxItems"
@@ -68,6 +65,26 @@ export default {
       },
       deep: true,
     },
+    items: {
+      handler: function (items) {
+        var me = this;
+        items.forEach(function (item, index) {
+          me.comboboxItems[index] = {
+            value: item.value,
+            text: item.text,
+            isSelected: false,
+          };
+
+          if (me.comboboxItems[index].value === me.selectedItem) {
+            me.comboboxItems[index].isSelected = true;
+            me.cbxInput = me.comboboxItems[index].text;
+          }
+        });
+        this.comboboxItems = [...this.comboboxItems];
+        console.log(this.comboboxItems);
+      },
+      deep: true,
+    },
   },
   created() {
     var me = this;
@@ -77,12 +94,14 @@ export default {
         text: item.text,
         isSelected: false,
       };
+
       if (me.comboboxItems[index].value === me.selectedItem) {
         me.comboboxItems[index].isSelected = true;
         me.cbxInput = me.comboboxItems[index].text;
       }
     });
-    this.comboboxItems = [...this.comboboxItems];
+    //this.comboboxItems = [...this.comboboxItems];
+    //console.log(this.comboboxItems);
   },
 
   methods: {
@@ -93,11 +112,9 @@ export default {
     toggleList() {
       this.isShow = !this.isShow;
       //this.$refs.BaseInput.focus();
-
       this.cbxItems = this.comboboxItems;
       this.currentFocus = 0;
     },
-
 
     /**
      * Hàm xử lý khi chọn 1 item trong combobox
@@ -118,7 +135,7 @@ export default {
 
       //this.$refs.BaseInput.blur();
       this.isShow = !this.isShow;
-      console.log(this.comboboxItems);
+      //console.log(this.comboboxItems);
     },
 
     /**
@@ -191,9 +208,12 @@ export default {
 .combobox .combobox-text {
   height: 100%;
   width: calc(100% - 32px);
-  padding-left: 10px;
+  padding: 0 10px;
   outline: none;
   border: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .combobox button {
   height: 100%;
@@ -232,9 +252,7 @@ export default {
 }
 
 .combobox .combobox-list .combobox-item {
-  height: 32px;
-  line-height: 32px;
-  padding-left: 16px;
+  padding: 8px 16px;
 }
 .combobox .combobox-list .combobox-item:hover {
   background-color: #ebedf0;
@@ -246,11 +264,9 @@ export default {
   color: #fff !important;
   position: relative;
   align-items: center;
-  line-height: 32px;
 }
 
 .focus-item {
   background-color: #ebedf0;
 }
-
 </style>

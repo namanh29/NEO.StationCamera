@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="body">
     <StationInfo v-if="screen === 'station'" @open-camera-screen="openCameraScreen"/>
-    <Camera v-if="screen === 'camera'" @close-screen="closeCameraScreen"/>
+    <Camera v-if="screen === 'camera'" @close-screen="closeCameraScreen" :station="station"/>
   </div>
   
 </template>
@@ -15,13 +15,16 @@ export default {
   },
   data() {
     return {
-      screen: "station"
+      screen: "station",
+      station: {}
     }
   },
   methods: {
-    openCameraScreen(){
+    openCameraScreen(item){
       this.screen = "camera";
+      this.station = item
       this.$emit("set-screen", this.screen)
+      console.log(item)
     },
     closeCameraScreen(){
       this.screen = "station";
@@ -30,3 +33,8 @@ export default {
   },
 }
 </script>
+<style scoped>
+.body{
+  height: calc(100vh - 60px);
+}
+</style>

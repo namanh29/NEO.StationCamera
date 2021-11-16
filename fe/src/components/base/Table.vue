@@ -1,5 +1,5 @@
 <template>
-  <div class="grid">
+  <div >
     <table class="table-Info">
       <thead>
         <th><input type="checkbox" /></th>
@@ -8,25 +8,21 @@
 
         <th v-for="(field, key) in fields" :key="key">
           <input v-if="field.typeSearch === 'input'" type="text" :placeholder="field.text" />
-          <select v-else-if="field.typeSearch === 'select'" name="" id=""></select>
+          <select v-else-if="field.typeSearch === 'select'" name="--Không chọn--" id="">
+            <option>--Không chọn--</option>
+            <option v-for="(item,index) in field.items" :key="index" :value="item.value">{{item.text}}</option>
+            
+          </select>
           <div v-else>{{ field.text }}</div>
         </th>
       </thead>
       <tbody>
-        <tr>
-          <td><input type="checkbox" /></td>
-          <td>0</td>
-          <td>
-            <button class="btn-icon" @click="onClickOperation">
-              <i :class="iconOperation"></i>
-            </button>
-          </td>
-        </tr>
+        
         <tr v-for="(item, index) in data" v-bind:key="index">
           <td><input type="checkbox" /></td>
           <td>{{ index + 1 }}</td>
           <td>
-            <button class="btn-icon" @click="onClickOperation">
+            <button class="btn-icon" @click="onClickOperation(item)">
               <i :class="iconOperation"></i>
             </button>
           </td>
@@ -49,19 +45,15 @@ export default {
     iconOperation: String
   },
   methods: {
-    onClickOperation() {
-      this.$emit("onclick-operation");
+    onClickOperation(item) {
+      this.$emit("onclick-operation", item);
     },
   },
 };
 </script>
 
 <style scoped>
-.grid {
-  overflow: auto;
-  height: 100%;
-  max-width: 100%;
-}
+
 table {
   border-collapse: separate;
   width: 100%;

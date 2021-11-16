@@ -10,45 +10,65 @@
         <input type="number" value="10" />
         entries
       </div>
-      <div class="grid">
-        <Table :data="stations" :fields="stationFields" :searchable="true" iconOperation="fas fa-camera" @onclick-operation="openCameraScreen"/>
-      </div>
+      
+      <Table class="grid" :data="stations" :fields="stationFields" iconOperation="fas fa-camera" @onclick-operation="openCameraScreen"/>
+      
     </div>
     <div class="paging-bar">
       <div class="paging-left">Showing...</div>
       <div class="paging-right">
-        <Pagination />
+        <!-- <Pagination /> -->
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import Table from "../components/base/Table.vue";
+
+import StationApi from "../service/stationApi"
 export default {
-  components: { Table },
+  
   data() {
     return {
       stations: [],
       stationFields: [
-        { name: "ins_name", text: "Search Loại trạm", typeSearch: "input" },
-        { name: "ins_id", text: "Search Tên loại trạm", typeSearch: "input"},
-        { name: "parameter_type_name", text: "Search Mã trạm", typeSearch: "input"},
-        { name: "manufact", text: "Search Tên trạm", typeSearch: "input"},
-        { name: "ins_model", text: "Search Kinh độ", typeSearch: "input"},
-        { name: "status", text: "Search Vĩ độ", typeSearch: "input"},
+        { name: "objectType", text: "Search Loại trạm", typeSearch: "input" },
+        { name: "objectTypeShortname", text: "Search Tên loại trạm", typeSearch: "input"},
+        { name: "stationCode", text: "Search Mã trạm", typeSearch: "input"},
+        { name: "stationName", text: "Search Tên trạm", typeSearch: "input"},
+        { name: "longtitude", text: "Search Kinh độ", typeSearch: "input"},
+        { name: "latitude", text: "Search Vĩ độ", typeSearch: "input"},
+        { name: "provinceName", text: "Search Tỉnh", typeSearch: "input"},
+        { name: "districtName", text: "Search Quận/Huyện", typeSearch: "input"},
+        { name: "wardName", text: "Search Xã", typeSearch: "input"},
+        { name: "address", text: "Search Địa chỉ", typeSearch: "input"},
+        { name: "wardName", text: "Search Thuộc Sông", typeSearch: "input"},
+        { name: "isActive", text: "", typeSearch: "select"},
       ],
     };
   },
+  created(){
+    this.createData()
+  },
   methods: {
-    openCameraScreen(){
-      this.$emit("open-camera-screen");
+    async createData(){
+      //this.stations = [];
+      const res = await StationApi.getAll()
+      this.stations = res.data
+      
+    },
+
+    openCameraScreen(item){
+      this.$emit("open-camera-screen", item);
     }
   },
 };
 </script>
 
 <style>
+.main {
+  height: 100%;
+}
 .button-bar {
   display: flex;
   height: 40px;
@@ -57,6 +77,7 @@ export default {
 }
 .grid-container {
   padding: 16px 16px 0 16px;
+  height: calc(100% - 90px);
 }
 .grid-header {
   margin-bottom: 16px;
@@ -65,7 +86,11 @@ export default {
   height: 25px;
   width: 50px;
 }
-
+.grid {
+  overflow: auto;
+  height: calc(100% - 41px);
+  max-width: 100%;
+}
 .paging-bar {
   height: 50px;
   width: 100%;
