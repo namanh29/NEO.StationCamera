@@ -26,14 +26,18 @@ export default {
         background-color: #007bff;
         height: 35px;
         display: flex;
-        border: none;
+        border-color: #007bff;
         outline: none;
-        align-items: center;
+        align-items: center;    
         padding: 0 16px;
+        border-radius: 0.25rem;
+    }
+    .btn-primary:hover {
+        background-color: #0069d9;
     }
     .btn-primary .icon-button{
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
         display: flex;
         align-items: center;
         color: #fff;

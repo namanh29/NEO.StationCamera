@@ -1,9 +1,15 @@
 <template>
-  <div class="combobox" @keydown="keyEvent($event)">
+  <div
+    class="combobox"
+    @keydown="keyEvent($event)"
+    :class="{ 'cbx-active': cbxActive, 'border-red': invalid }"
+  >
     <input
       class="combobox-text"
       type="text"
       v-model="cbxInput"
+      @focus="cbxActive = true"
+      @blur="cbxActive = false"
       @input="autocomplete"
       ref="BaseInput"
     />
@@ -49,6 +55,8 @@ export default {
       cbxInput: "",
       cbxItems: [],
       currentFocus: 0,
+      cbxActive: false,
+      invalid: false,
     };
   },
   watch: {
@@ -104,6 +112,14 @@ export default {
     //console.log(this.comboboxItems);
   },
 
+  mounted() {
+    document.addEventListener("click", this.handleClickOutside);
+  },
+  // xóa sự kiện này khi thoát khỏi xóa component
+  destroyed() {
+    document.removeEventListener("click", this.handleClickOutside);
+  },
+
   methods: {
     /**
      * Hàm xử lý khi nhấn vào button toggle
@@ -111,6 +127,7 @@ export default {
      */
     toggleList() {
       this.isShow = !this.isShow;
+      this.cbxActive = this.isShow;
       //this.$refs.BaseInput.focus();
       this.cbxItems = this.comboboxItems;
       this.currentFocus = 0;
@@ -191,6 +208,12 @@ export default {
         }
       }
     },
+    handleClickOutside(event) {
+      if (!this.$el.contains(event.target)) {
+        this.cbxActive = false;
+        this.isShow = false;
+      }
+    },
   },
 };
 </script>
@@ -199,10 +222,10 @@ export default {
 .combobox {
   display: flex;
   position: relative;
-  border: 1px solid #3385ff;
+  border: 1px solid #ced4da;
   border-radius: 4px;
   width: 100%;
-  height: 32px;
+  height: 35px;
 }
 
 .combobox .combobox-text {
@@ -241,7 +264,7 @@ export default {
 }
 .combobox .combobox-list {
   position: absolute;
-  top: calc(100% + 2px);
+  top: calc(100% + 0.2rem);
   left: -1px;
   right: -1px;
   z-index: 100;
@@ -255,12 +278,12 @@ export default {
   padding: 8px 16px;
 }
 .combobox .combobox-list .combobox-item:hover {
-  background-color: #ebedf0;
-  color: #2ca01c;
+  background-color: #0074f0;
+  color: #fff;
   cursor: pointer;
 }
 .combobox .selected {
-  background-color: #2ca01c !important;
+  background-color: #5897fb !important;
   color: #fff !important;
   position: relative;
   align-items: center;
@@ -268,5 +291,12 @@ export default {
 
 .focus-item {
   background-color: #ebedf0;
+}
+.cbx-active {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+}
+.border-red {
+  border: 1px solid #ff4747;
 }
 </style>

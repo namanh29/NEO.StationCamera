@@ -2,9 +2,12 @@
   <div>
     <div class="info-form">
       <div class="title">Quản lý camera từng trạm</div>
-      
-        <div id="station-title" class="label">Trạm đo <span>{{station.stationId}} - {{station.stationName}}</span></div>
-      
+
+      <div id="station-title" class="label">
+        Trạm đo:
+        <span>{{ station.stationId }} - {{ station.stationName }}</span>
+      </div>
+
       <div class="form-row">
         <div class="input-label m-b-30">
           <div class="label">Loại thiết bị <span>*</span></div>
@@ -16,26 +19,46 @@
         </div>
         <div class="input-label m-b-30">
           <div class="label">Tên Camera <span>*</span></div>
-          <input class="input-box" type="text" v-model="camera.cameraName" />
+          <input
+            class="input-box"
+            type="text"
+            v-model="camera.cameraName"
+            @blur="onBlur($event.target)"
+            ref="input1"
+            :invalid="false"
+          />
         </div>
       </div>
       <div class="form-row">
         <div class="input-label m-b-30">
           <div class="label">Vị trí lắp đặt <span>*</span></div>
-          <input class="input-box" type="text" v-model="camera.position" />
+          <input
+            class="input-box"
+            type="text"
+            v-model="camera.position"
+            @blur="onBlur($event.target)"
+            ref="input2"
+          />
         </div>
         <div class="input-label m-b-30">
           <div class="label">Camera Ip <span>*</span></div>
-          <input class="input-box" type="text" v-model="camera.cameraIp" />
+          <input
+            class="input-box"
+            type="text"
+            v-model="camera.cameraIp"
+            @blur="onBlur($event.target)"
+            ref="input3"
+          />
         </div>
       </div>
       <div class="form-row">
         <div class="input-label m-b-30">
           <div class="label">Trạng thái <span>*</span></div>
-          <Combobox 
-            :items="cameraStatus" 
-            :selectedItem="camera.status" 
-            @update-item="(item) => updateCombobox(item, 'status')"/>
+          <Combobox
+            :items="cameraStatus"
+            :selectedItem="camera.status"
+            @update-item="(item) => updateCombobox(item, 'status')"
+          />
         </div>
         <div class="input-label m-b-30">
           <div class="label">User/Pass đăng nhập <span>*</span></div>
@@ -44,12 +67,16 @@
               class="input-box acc"
               type="text"
               v-model="camera.userLogin"
+              @blur="onBlur($event.target)"
+              ref="input4"
             />
             <span>/</span>
             <input
               class="input-box acc"
               type="password"
               v-model="camera.passLogin"
+              @blur="onBlur($event.target)"
+              ref="input5"
             />
           </div>
         </div>
@@ -88,23 +115,37 @@
     <div class="grid-container">
       <div class="grid-header">
         Show
-        <input type="number" value="10" />
+        <select v-model="perPage">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
         entries
       </div>
       <div class="grid">
         <Table
           :data="cameras"
           :fields="cameraFields"
+          :inputSearch="cameraFilter"
           iconOperation="fas fa-edit"
           @onclick-operation="clickUpdate"
+          @search="getCameraFilter"
         />
       </div>
     </div>
 
     <div class="paging-bar">
-      <div class="paging-left">Showing...</div>
+      <div class="paging-left">
+        Showing {{ firstIndex }} to {{ lastIndex }} of
+        {{ totalRecords }} entries
+      </div>
       <div class="paging-right">
-        <!-- <Pagination /> -->
+        <Pagination
+          :total-pages="totalPages"
+          :current-page="currentPage"
+          @pagechanged="onPageChange"
+        />
       </div>
     </div>
   </div>
@@ -124,19 +165,34 @@ export default {
         { value: 3, text: "Đang mang đi bảo hành" },
       ],
       cameraFields: [
-        { name: "cameraName", text: "Search Tên camera", typeSearch: "input" },
-        { name: "insName", text: "Search loại thiết bị", typeSearch: "input" },
-        { name: "statusName", typeSearch: "select", items: [
-          { value: 0, text: "Không dùng/Không có/Xóa" },
-          { value: 1, text: "Có trong trạm" },
-          { value: 2, text: "Đang lỗi" },
-          { value: 3, text: "Đang mang đi bảo hành" }
-        ]
-      },
+        {
+          name: "cameraName",
+          text: "Search Tên camera",
+          typeSearch: "input",
+          value: "",
+        },
+        {
+          name: "insName",
+          text: "Search loại thiết bị",
+          typeSearch: "input",
+          value: "",
+        },
+        {
+          name: "statusName",
+          typeSearch: "select",
+          items: [
+            { value: 0, text: "Không dùng/Không có/Xóa" },
+            { value: 1, text: "Có trong trạm" },
+            { value: 2, text: "Đang lỗi" },
+            { value: 3, text: "Đang mang đi bảo hành" },
+          ],
+          value: "",
+        },
         {
           name: "position",
           text: "Search vị trí lắp đặt",
           typeSearch: "input",
+          value: "",
         },
         { name: "cameraIp", text: "Ip camera" },
       ],
@@ -144,11 +200,42 @@ export default {
       camera: {},
       instrumentations: [],
       instrumentationCombobox: [],
+
+      // pagination
+      currentPage: 1,
+      totalPages: 0,
+      totalRecords: 0,
+      perPage: 10,
+      cameraFilter: {
+        cameraName: "",
+        insName: "",
+        statusName: "",
+        position: "",
+      },
+
+      indexInvalid: [],
     };
   },
 
   props: {
     station: Object,
+  },
+  watch: {
+    perPage() {
+      this.getCameraFilter(this.cameraFilter);
+    },
+  },
+  computed: {
+    firstIndex() {
+      if (this.totalRecords > 0)
+        return this.perPage * (this.currentPage - 1) + 1;
+      else return 0;
+    },
+    lastIndex() {
+      return this.perPage * this.currentPage < this.totalRecords
+        ? this.perPage * this.currentPage
+        : this.totalRecords;
+    },
   },
 
   created() {
@@ -158,11 +245,18 @@ export default {
   methods: {
     async createData() {
       const promise = await Promise.all([
-        CameraApi.getByStationId(this.station.stationId),
+        CameraApi.getPagingAndFilter(
+          this.station.stationId,
+          this.cameraFilter,
+          1,
+          this.perPage
+        ),
         InstrumentationApi.getAll(),
       ]);
 
-      this.cameras = await promise[0].data;
+      this.cameras = await promise[0].data.records;
+      this.totalPages = promise[0].data.totalPages;
+      this.totalRecords = promise[0].data.totalRecords;
       this.instrumentations = await promise[1].data;
       var me = this;
       this.instrumentations.forEach(function (item, index) {
@@ -180,50 +274,121 @@ export default {
       this.state = "edit";
       this.camera = item;
     },
-    updateCombobox(item, type){
-      if(type === 'instrumentation'){
-        this.camera = {...this.camera, cameraId: item.value}
+    updateCombobox(item, type) {
+      if (type === "instrumentation") {
+        this.camera = { ...this.camera, cameraId: item.value };
+      } else if (type === "status") {
+        this.camera = { ...this.camera, status: item.value };
       }
-      else if(type === 'status'){
-        this.camera = {...this.camera, status: item.value}
+    },
+    validate() {
+      var me = this;
+      let isValid = true;
+      this.indexInvalid = [];
+      Object.entries(this.$refs).forEach(function (item, index) {
+        item[1].focus();
+        item[1].blur();
+        console.log(item)
+        if (item[1].invalid == true) {
+          isValid = false;
+          me.indexInvalid.push(index);
+        }
+      });
+      if (isValid == false) {
+        // Hiển thị popup cảnh báo dữ liệu không hợp lệ
+        var errorMsg = Object.entries(this.$refs)[this.indexInvalid[0]][1].title;
+        //this.setPopup(errorMsg, 'error', 'validateEmpty')
+        alert(errorMsg);
       }
+      return false;
     },
     async addCamera() {
-      try {
-        this.camera = {...this.camera, stationId: this.station.stationId}
-        const res = await CameraApi.add(this.camera);
-        console.log(res)
-        if (res.status === 200) {
-          alert("Thêm thành công");
+      var valid = this.validate();
+      if (valid == true) {
+        try {
+          this.camera = { ...this.camera, stationId: this.station.stationId };
+          const res = await CameraApi.add(this.camera);
+          console.log(res);
+          if (res.status === 200) {
+            alert("Thêm thành công");
+          }
+          this.reloadData();
+        } catch (error) {
+          alert("Có lỗi xảy ra" + error);
         }
-        this.reloadData();
-      } catch (error) {
-        alert("Có lỗi xảy ra" + error);
       }
     },
-    async updateCamera(){
+    async updateCamera() {
       try {
-        this.camera = {...this.camera, stationId: this.station.stationId}
-        const res = await CameraApi.update(this.camera.id, this.camera)
-        console.log(res)
-        alert("Thêm thành công");
+        this.camera = { ...this.camera, stationId: this.station.stationId };
+        console.log(this.camera);
+        const res = await CameraApi.update(this.camera.id, this.camera);
+        console.log(res);
+
+        alert("Cập nhật thành công");
         this.reloadData();
       } catch (error) {
         alert("Có lỗi xảy ra" + error);
       }
     },
-    resetForm(){
+    resetForm() {
       this.camera = {};
     },
-    async reloadData(){
-      this.cameras = []
+    async reloadData() {
+      this.cameras = [];
       try {
-        const res = await CameraApi.getByStationId(this.station.stationId);
-        this.cameras = res.data
+        const res = await CameraApi.getPagingAndFilter(
+          this.station.stationId,
+          this.cameraFilter,
+          1,
+          this.perPage
+        );
+        this.cameras = res.data.records;
+        this.totalPages = res.data.totalPages;
+        this.totalRecords = res.data.totalRecords;
       } catch (error) {
         alert("Có lỗi xảy ra" + error);
       }
-    }
+    },
+    async getCameraFilter(inputSearch) {
+      this.cameras = [];
+      this.currentPage = 1;
+
+      this.cameraFilter = inputSearch;
+      const res = await CameraApi.getPagingAndFilter(
+        this.station.stationId,
+        inputSearch,
+        this.currentPage,
+        this.perPage
+      );
+      this.totalPages = res.data.totalPages;
+      this.totalRecords = res.data.totalRecords;
+      this.cameras = res.data.records;
+      console.log(res.data);
+    },
+
+    async onPageChange(page) {
+      console.log(page);
+      this.currentPage = page;
+      this.cameras = [];
+      const res = await CameraApi.getPagingAndFilter(
+        this.station.stationId,
+        this.cameraFilter,
+        page,
+        this.perPage
+      );
+      this.cameras = res.data.records;
+    },
+    onBlur(e) {
+      if (e.value == "") {
+        e.invalid = true;
+        e.title = "Trường này không được để trống";
+        e.classList.add("border-red");
+      } else {
+        e.invalid = false;
+        e.title = "";
+      }
+    },
   },
 };
 </script>
@@ -248,7 +413,7 @@ export default {
   justify-content: space-between;
   margin-bottom: 16px;
 }
-#station-title{
+#station-title {
   margin: 16px;
 }
 #station-title span {
@@ -258,7 +423,7 @@ export default {
   width: 50%;
   padding: 0 5px;
 }
- .label {
+.label {
   margin-bottom: 8px;
   font-weight: 700;
 }
@@ -268,11 +433,15 @@ export default {
 }
 .input-box {
   width: 100%;
-  height: 30px;
+  height: 35px;
   border: 1px solid #ced4da;
   outline: none;
   border-radius: 0.25rem;
-  padding-left: 10px;
+  padding: 6px 12px;
+}
+.input-box:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
 }
 .wrap-button {
   display: flex;
@@ -285,5 +454,18 @@ export default {
   display: flex;
 
   align-items: center;
+}
+select {
+  height: calc(1.8125rem + 2px);
+  border-radius: 0.2rem;
+  outline: none;
+  border: 1px solid #ced4da;
+}
+select:focus {
+  border-color: #80bdff;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 8%), 0 0 5px rgb(128 189 255 / 50%);
+}
+.border-red {
+  border-color: red;
 }
 </style>

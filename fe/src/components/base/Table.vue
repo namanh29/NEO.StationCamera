@@ -1,25 +1,40 @@
 <template>
-  <div >
+  <div>
     <table class="table-Info">
       <thead>
-        <th><input type="checkbox" /></th>
+        <!-- <th><input type="checkbox" /></th> -->
         <th>#</th>
         <th>Thao tác</th>
 
         <th v-for="(field, key) in fields" :key="key">
-          <input v-if="field.typeSearch === 'input'" type="text" :placeholder="field.text" />
-          <select v-else-if="field.typeSearch === 'select'" name="--Không chọn--" id="">
-            <option>--Không chọn--</option>
-            <option v-for="(item,index) in field.items" :key="index" :value="item.value">{{item.text}}</option>
-            
+          <input
+            v-if="field.typeSearch === 'input'"
+            type="text"
+            :placeholder="field.text"
+            v-model="inputSearch[field.name]"
+            @keyup.enter="onPressEnter"
+          />
+          <select
+            v-else-if="field.typeSearch === 'select'"
+            name="--Không chọn--"
+            v-model="inputSearch[field.name]"
+            @change="onChangeSelect"
+          >
+            <option disabled value="">--Không chọn--</option>
+            <option
+              v-for="(item, index) in field.items"
+              :key="index"
+              :value="item.value"
+            >
+              {{ item.text }}
+            </option>
           </select>
           <div v-else>{{ field.text }}</div>
         </th>
       </thead>
       <tbody>
-        
         <tr v-for="(item, index) in data" v-bind:key="index">
-          <td><input type="checkbox" /></td>
+          <!-- <td><input type="checkbox" /></td> -->
           <td>{{ index + 1 }}</td>
           <td>
             <button class="btn-icon" @click="onClickOperation(item)">
@@ -38,22 +53,33 @@
 
 <script>
 export default {
+  data() {
+    return {
+      
+    };
+  },
   props: {
     fields: Array,
     data: Array,
-    
-    iconOperation: String
+    inputSearch: Object,
+    iconOperation: String,
   },
   methods: {
     onClickOperation(item) {
       this.$emit("onclick-operation", item);
     },
+    onPressEnter(){
+      this.$emit("search", this.inputSearch);
+      console.log(this.inputSearch);
+    },
+    onChangeSelect(){
+      this.$emit("search", this.inputSearch);
+    }
   },
 };
 </script>
 
 <style scoped>
-
 table {
   border-collapse: separate;
   width: 100%;
@@ -82,11 +108,11 @@ td:nth-child(1) {
 th:nth-child(1) {
   border-left: 1px solid #bbb;
 }
-th input {
-	height: 24px;
-	padding: 0 16px;
-	border-radius: 3px;
-	border: 1px solid #bbb;
+th input, th select {
+  height: 27px;
+  padding: 0 16px;
+  border-radius: 3px;
+  border: 1px solid #bbb;
 }
 .grid::-webkit-scrollbar-track {
   margin-top: 48px;

@@ -10,9 +10,15 @@
         <input type="number" value="10" />
         entries
       </div>
-      
-      <Table class="grid" :data="stations" :fields="stationFields" iconOperation="fas fa-camera" @onclick-operation="openCameraScreen"/>
-      
+
+      <Table
+        class="grid"
+        :data="stations"
+        :fields="stationFields"
+        iconOperation="fas fa-camera"
+        @onclick-operation="openCameraScreen"
+        :inputSearch="stationFilter"
+      />
     </div>
     <div class="paging-bar">
       <div class="paging-left">Showing...</div>
@@ -24,43 +30,49 @@
 </template>
 
 <script>
-
-import StationApi from "../service/stationApi"
+import StationApi from "../service/stationApi";
 export default {
-  
   data() {
     return {
       stations: [],
       stationFields: [
         { name: "objectType", text: "Search Loại trạm", typeSearch: "input" },
-        { name: "objectTypeShortname", text: "Search Tên loại trạm", typeSearch: "input"},
-        { name: "stationCode", text: "Search Mã trạm", typeSearch: "input"},
-        { name: "stationName", text: "Search Tên trạm", typeSearch: "input"},
-        { name: "longtitude", text: "Search Kinh độ", typeSearch: "input"},
-        { name: "latitude", text: "Search Vĩ độ", typeSearch: "input"},
-        { name: "provinceName", text: "Search Tỉnh", typeSearch: "input"},
-        { name: "districtName", text: "Search Quận/Huyện", typeSearch: "input"},
-        { name: "wardName", text: "Search Xã", typeSearch: "input"},
-        { name: "address", text: "Search Địa chỉ", typeSearch: "input"},
-        { name: "wardName", text: "Search Thuộc Sông", typeSearch: "input"},
-        { name: "isActive", text: "", typeSearch: "select"},
+        {
+          name: "objectTypeShortname",
+          text: "Search Tên loại trạm",
+          typeSearch: "input",
+        },
+        { name: "stationCode", text: "Search Mã trạm", typeSearch: "input" },
+        { name: "stationName", text: "Search Tên trạm", typeSearch: "input" },
+        { name: "longtitude", text: "Search Kinh độ", typeSearch: "input" },
+        { name: "latitude", text: "Search Vĩ độ", typeSearch: "input" },
+        { name: "provinceName", text: "Search Tỉnh", typeSearch: "input" },
+        {
+          name: "districtName",
+          text: "Search Quận/Huyện",
+          typeSearch: "input",
+        },
+        { name: "wardName", text: "Search Xã", typeSearch: "input" },
+        { name: "address", text: "Search Địa chỉ", typeSearch: "input" },
+        { name: "wardName", text: "Search Thuộc Sông", typeSearch: "input" },
+        { name: "isActive", text: "", typeSearch: "select" },
       ],
+      stationFilter: {}
     };
   },
-  created(){
-    this.createData()
+  created() {
+    this.createData();
   },
   methods: {
-    async createData(){
+    async createData() {
       //this.stations = [];
-      const res = await StationApi.getAll()
-      this.stations = res.data
-      
+      const res = await StationApi.getAll();
+      this.stations = res.data;
     },
 
-    openCameraScreen(item){
+    openCameraScreen(item) {
       this.$emit("open-camera-screen", item);
-    }
+    },
   },
 };
 </script>
