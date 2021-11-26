@@ -12,8 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PagingFilterCameraResponse {
-    List<CameraDisplay> cameras = new ArrayList<>();;
+public class PagingFilterResponse<T> {
+    List<T> records = new ArrayList<>();;
     Integer totalPages;
     Long totalRecords;
 }

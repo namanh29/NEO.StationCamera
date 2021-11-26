@@ -1,7 +1,6 @@
 package com.example.be.service;
 
-import com.example.be.entity.Station;
-import com.example.be.entity.StationDisplay;
+import com.example.be.dto.StationDisplay;
 import com.example.be.repository.StationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

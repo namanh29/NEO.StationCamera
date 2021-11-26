@@ -1,7 +1,6 @@
 package com.example.be.api;
 
-import com.example.be.entity.Station;
-import com.example.be.entity.StationDisplay;
+import com.example.be.dto.StationDisplay;
 import com.example.be.service.StationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;

@@ -1,8 +1,9 @@
 package com.example.be.api;
 
 import com.example.be.dto.CameraDisplay;
-import com.example.be.dto.PagingFilterCameraResponse;
+import com.example.be.dto.PagingFilterResponse;
 import com.example.be.entity.Camera;
+import com.example.be.exception.ResourceNotFoundException;
 import com.example.be.repository.CameraRepository;
 import com.example.be.service.CameraService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "api/v1/camera")
@@ -34,43 +38,31 @@ public class CameraController {
     }
 
     @PostMapping
-    public void addCamera(@RequestBody Camera camera){
-        cameraService.addCamera(camera);
+    public ResponseEntity<Camera> addCamera(@Valid @RequestBody Camera camera){
+        return new ResponseEntity<>(cameraService.addCamera(camera), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Object> updateCamera(@RequestBody Camera newCamera, @PathVariable Integer id) {
-        return cameraService.updateCamera(newCamera, id);
+    public ResponseEntity<Camera> updateCamera(@Valid @RequestBody Camera camera, @PathVariable Integer id) {
+        return new ResponseEntity<>(cameraService.updateCamera(camera, id), HttpStatus.OK);
     }
 
     @GetMapping(path = "/station_id/{stationId}/filter")
-    public Page<CameraDisplay> getCameraFilter(
+    public PagingFilterResponse<CameraDisplay> getCameraFilter(
             @PathVariable("stationId") String station_id,
             @RequestParam(required = false, name = "name") String cameraName,
+            @RequestParam(required = false, name = "ins") String insName,
+            @RequestParam(required = false, name = "status") Integer status,
+            @RequestParam(required = false, name = "position") String position,
             @RequestParam(name = "pageindex", defaultValue = "0") Integer pageIndex,
             @RequestParam(name = "pagesize", defaultValue = "10") Integer pageSize){
 
         Pageable paging = PageRequest.of(pageIndex, pageSize);
-        Page<CameraDisplay> cameraResult = cameraRepository.getCamerasPagingAndFilter(station_id, cameraName, paging);
-        /*PagingFilterCameraResponse response = new PagingFilterCameraResponse(cameraResult.getContent(), cameraResult.getTotalPages(), cameraResult.getTotalElements());
-        return response;*/
-        return cameraResult;
+        Page<CameraDisplay> cameraResult = cameraRepository.getCamerasPagingAndFilter(station_id, cameraName, insName, status, position, paging);
+        PagingFilterResponse<CameraDisplay> response = new PagingFilterResponse(cameraResult.getContent(), cameraResult.getTotalPages(), cameraResult.getTotalElements());
+        return response;
 
     }
 
-    /*@GetMapping(path = "/station_id/{stationId}/filter")
-    public PagingFilterCameraResponse getCameraFilter(
-            @PathVariable("stationId") String station_id,
-            @RequestParam(required = false, name = "name") String cameraName,
-            @RequestParam(name = "pageindex", defaultValue = "0") Integer pageIndex,
-            @RequestParam(name = "pagesize", defaultValue = "10") Integer pageSize){
-
-        Pageable paging = PageRequest.of(pageIndex, pageSize);
-        //Page<CameraDisplay> cameraResult = cameraRepository.getCamerasPagingAndFilter(station_id, cameraName, paging);
-        //PagingFilterCameraResponse response = new PagingFilterCameraResponse(cameraResult.getContent(), cameraResult.getTotalPages(), cameraResult.getTotalElements());
-        List<CameraDisplay> response = cameraRepository.getCamerasPagingAndFilter(station_id, cameraName);
-        return response;
-
-    }*/
 
 }

@@ -2,11 +2,15 @@ package com.example.be.service;
 
 import com.example.be.dto.CameraDisplay;
 import com.example.be.entity.Camera;
+import com.example.be.exception.ResourceDuplicateException;
+import com.example.be.exception.ResourceNotFoundException;
 import com.example.be.repository.CameraRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,34 +28,34 @@ public class CameraService {
 
     }
 
-    public void addCamera(Camera camera) {
-        Integer id = cameraRepository.getMaxId() + 1;
-        camera.setId(id);
-        cameraRepository.save(camera);
+    public Camera addCamera(Camera camera) {
+        List<Camera> existingCamera = cameraRepository.findByCameraIdAndStationIdAndCameraIpAndStatus(
+                camera.getCameraId(),
+                camera.getStationId(),
+                camera.getCameraIp(),
+                camera.getStatus() );
+        if(!existingCamera.isEmpty()) {
+            throw new ResourceDuplicateException("Camera đã tồn tại");
+        }
+        else {
+            Integer id = cameraRepository.getMaxId() + 1;
+            camera.setId(id);
+            camera.setCreatedDate(new Date());
+            camera.setUpdatedDate(new Date());
+            return cameraRepository.save(camera);
+        }
     }
 
-    public ResponseEntity<Object> updateCamera(Camera camera, Integer id){
-        /*return cameraRepository.findById(id)
-                .map(camera -> {
-                    camera.setCameraId(newCamera.getCameraId());
-                    camera.setCameraIp(newCamera.getCameraIp());
-                    camera.setCameraName(newCamera.getCameraName());
-                    camera.setPosition(newCamera.getPosition());
-                    camera.setStatus(newCamera.getStatus());
-                    camera.setUserLogin(newCamera.getUserLogin());
-                    camera.setPassLogin(newCamera.getPassLogin());
-                    return cameraRepository.save(camera);
-                })
-                .orElseGet(() -> {
-                    newCamera.setId(id);
-                    return cameraRepository.save(newCamera);
-                });*/
-        Optional<Camera> cameraData = cameraRepository.findById(id);
-        if(!cameraData.isPresent()){
-            return ResponseEntity.noContent().build();
+    public Camera updateCamera(Camera camera, Integer id){
+        Optional<Camera> existingCamera = cameraRepository.findById(id);
+        if(!existingCamera.isPresent()){
+            throw new ResourceNotFoundException("Camera", "Id", id);
         }
-        camera.setId(id);
-        cameraRepository.save(camera);
-        return ResponseEntity.ok().build();
+        else {
+            camera.setId(id);
+            camera.setUpdatedDate(new Date());
+            return cameraRepository.save(camera);
+        }
+
     }
 }

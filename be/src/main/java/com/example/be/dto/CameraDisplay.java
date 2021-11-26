@@ -30,11 +30,17 @@ public class CameraDisplay {
         this.cameraIp = cameraIp;
         this.position = position;
         this.status = status;
-        if(status == 1){
-            this.statusName = "dang dung";
+        if(status == 0){
+            this.statusName = "Không dùng/Không có/Xóa";
+        }
+        else if(status == 1){
+            this.statusName = "Có trong trạm";
         }
         else if(status == 2){
-            this.statusName = "dang loi";
+            this.statusName = "Đang lỗi";
+        }
+        else {
+            this.statusName = "Đang mang đi bảo hành";
         }
 
         this.userLogin = userLogin;
