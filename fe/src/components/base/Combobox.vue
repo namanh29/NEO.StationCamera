@@ -1,37 +1,42 @@
 <template>
-  <div
-    class="combobox"
-    @keydown="keyEvent($event)"
-    :class="{ 'cbx-active': cbxActive, 'border-red': invalid }"
-  >
-    <input
-      class="combobox-text"
-      type="text"
-      v-model="cbxInput"
-      @focus="cbxActive = true"
-      @blur="cbxActive = false"
-      @input="autocomplete"
-      ref="BaseInput"
-    />
-    <button @click="toggleList">
-      <div class="icon-button" :class="{ reverse: isShow }">
-        <i class="fas fa-chevron-down"></i>
-      </div>
-    </button>
-    <div v-if="isShow" class="combobox-list">
-      <div
-        class="combobox-item"
-        v-for="(cbxItem, index) in cbxItems"
-        :class="{
-          selected: cbxItem.isSelected,
-          'focus-item': index == currentFocus,
-        }"
-        :key="index"
-        @click="clickItem(cbxItem)"
-      >
-        {{ cbxItem.text }}
+  <div>
+    <div
+      class="combobox"
+      @keydown="keyEvent($event)"
+      :class="{ 'cbx-active': cbxActive, 'border-red': invalid }"
+    >
+      <input
+        class="combobox-text"
+        type="text"
+        v-model="cbxInput"
+        @focus="cbxActive = true"
+        @blur="onBlur($event.target)"
+        @input="autocomplete"
+        ref="BaseInput"
+        :title="message"
+      />
+      <button @click="toggleList">
+        <div class="icon-button" :class="{ reverse: isShow }">
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </button>
+      
+      <div v-if="isShow" class="combobox-list">
+        <div
+          class="combobox-item"
+          v-for="(cbxItem, index) in cbxItems"
+          :class="{
+            selected: cbxItem.isSelected,
+            'focus-item': index == currentFocus,
+          }"
+          :key="index"
+          @click="clickItem(cbxItem)"
+        >
+          {{ cbxItem.text }}
+        </div>
       </div>
     </div>
+    <div v-show="isShowMsg" class="msg" ref="Message">{{message}}</div>
   </div>
 </template>
 
@@ -47,6 +52,14 @@ export default {
       type: Boolean,
       default: false,
     },
+    required: {
+      type: Boolean,
+      default: true
+    },
+    label: {
+      type: String,
+      default: "Trường này"
+    }
   },
   data() {
     return {
@@ -57,6 +70,8 @@ export default {
       currentFocus: 0,
       cbxActive: false,
       invalid: false,
+      message: "",
+      isShowMsg: false
     };
   },
   watch: {
@@ -181,6 +196,19 @@ export default {
       }
     },
 
+    onBlur(e) {
+      this.cbxActive = false;
+      if (this.required == true) {
+        if (e.value == "") {
+          this.invalid = true;
+          this.message = `${this.label} không được để trống`;
+        } else {
+          this.invalid = false;
+          this.message = "";
+        }
+      }
+    },
+
     /**
      * Hàm xử lý sự kiện sử dụng bàn phím
      * CreatedBy: PNANH (21/8/2021)
@@ -227,6 +255,10 @@ export default {
   width: 100%;
   height: 35px;
 }
+.combobox:focus-within {
+  border-color: #80bdff !important;
+  box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
+}
 
 .combobox .combobox-text {
   height: 100%;
@@ -237,6 +269,7 @@ export default {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border-radius: inherit;
 }
 .combobox button {
   height: 100%;
@@ -246,6 +279,7 @@ export default {
   background-color: #fff;
   cursor: pointer;
   position: relative;
+  border-radius: inherit;
 }
 .combobox button:hover {
   background-color: #e9ebee;
@@ -292,11 +326,16 @@ export default {
 .focus-item {
   background-color: #ebedf0;
 }
-.cbx-active {
-  border-color: #80bdff;
+/* .cbx-active {
+  border-color: #80bdff !important;
   box-shadow: 0 0 0 0.2rem rgb(0 123 255 / 25%);
-}
+} */
 .border-red {
   border: 1px solid #ff4747;
+}
+.msg {
+  
+  color: red;
+  
 }
 </style>

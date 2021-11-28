@@ -15,38 +15,58 @@
             :items="instrumentationCombobox"
             :selectedItem="camera.cameraId"
             @update-item="(item) => updateCombobox(item, 'instrumentation')"
+            ref="cbx1"
+            label="Loại thiết bị"
           />
         </div>
         <div class="input-label m-b-30">
           <div class="label">Tên Camera <span>*</span></div>
-          <input
+          <!-- <input
             class="input-box"
             type="text"
             v-model="camera.cameraName"
             @blur="onBlur($event.target)"
             ref="input1"
             :invalid="false"
+          /> -->
+          <Input
+            label="Tên camera"
+            type="text"
+            v-model="camera.cameraName"
+            ref="input1"
           />
         </div>
       </div>
       <div class="form-row">
         <div class="input-label m-b-30">
           <div class="label">Vị trí lắp đặt <span>*</span></div>
-          <input
+          <!-- <input
             class="input-box"
             type="text"
             v-model="camera.position"
             @blur="onBlur($event.target)"
             ref="input2"
+          /> -->
+          <Input
+            label="Vị trí"
+            type="text"
+            v-model="camera.position"
+            ref="input2"
           />
         </div>
         <div class="input-label m-b-30">
           <div class="label">Camera Ip <span>*</span></div>
-          <input
+          <!-- <input
             class="input-box"
             type="text"
             v-model="camera.cameraIp"
             @blur="onBlur($event.target)"
+            ref="input3"
+          /> -->
+          <Input
+            label="Camera Ip"
+            type="text"
+            v-model="camera.cameraIp"
             ref="input3"
           />
         </div>
@@ -58,24 +78,38 @@
             :items="cameraStatus"
             :selectedItem="camera.status"
             @update-item="(item) => updateCombobox(item, 'status')"
+            ref="cbx2"
+            label="Trạng thái"
           />
         </div>
         <div class="input-label m-b-30">
           <div class="label">User/Pass đăng nhập <span>*</span></div>
           <div class="input-acc">
-            <input
+            <!-- <input
               class="input-box acc"
               type="text"
               v-model="camera.userLogin"
               @blur="onBlur($event.target)"
               ref="input4"
+            /> -->
+            <Input
+              label="User đăng nhập"
+              type="text"
+              v-model="camera.userLogin"
+              ref="input4"
             />
             <span>/</span>
-            <input
+            <!-- <input
               class="input-box acc"
               type="password"
               v-model="camera.passLogin"
               @blur="onBlur($event.target)"
+              ref="input5"
+            /> -->
+            <Input
+              label="Pass đăng nhập"
+              type="password"
+              v-model="camera.passLogin"
               ref="input5"
             />
           </div>
@@ -154,6 +188,7 @@
 <script>
 import CameraApi from "../service/cameraApi";
 import InstrumentationApi from "../service/instrumentationApi";
+import { mapActions, mapMutations } from "vuex";
 export default {
   data() {
     return {
@@ -243,29 +278,35 @@ export default {
   },
 
   methods: {
+    ...mapActions(["addToast"]),
+    ...mapMutations(["setToast"]),
     async createData() {
-      const promise = await Promise.all([
-        CameraApi.getPagingAndFilter(
-          this.station.stationId,
-          this.cameraFilter,
-          1,
-          this.perPage
-        ),
-        InstrumentationApi.getAll(),
-      ]);
+      try {
+        const promise = await Promise.all([
+          CameraApi.getPagingAndFilter(
+            this.station.stationId,
+            this.cameraFilter,
+            1,
+            this.perPage
+          ),
+          InstrumentationApi.getAll(),
+        ]);
 
-      this.cameras = await promise[0].data.records;
-      this.totalPages = promise[0].data.totalPages;
-      this.totalRecords = promise[0].data.totalRecords;
-      this.instrumentations = await promise[1].data;
-      var me = this;
-      this.instrumentations.forEach(function (item, index) {
-        me.instrumentationCombobox[index] = {
-          value: item.insId,
-          text: `${item.insCode} - ${item.insName} - ${item.manufact}`,
-        };
-      });
-      this.instrumentationCombobox = [...this.instrumentationCombobox];
+        this.cameras = await promise[0].data.records;
+        this.totalPages = promise[0].data.totalPages;
+        this.totalRecords = promise[0].data.totalRecords;
+        this.instrumentations = await promise[1].data;
+        var me = this;
+        this.instrumentations.forEach(function (item, index) {
+          me.instrumentationCombobox[index] = {
+            value: item.insId,
+            text: `${item.insCode} - ${item.insName} - ${item.manufact}`,
+          };
+        });
+        this.instrumentationCombobox = [...this.instrumentationCombobox];
+      } catch (error) {
+        this.addToast({ type: "error", message: "Có lỗi xảy ra" });
+      }
     },
     closeScreen() {
       this.$emit("close-screen");
@@ -286,9 +327,10 @@ export default {
       let isValid = true;
       this.indexInvalid = [];
       Object.entries(this.$refs).forEach(function (item, index) {
-        item[1].focus();
-        item[1].blur();
-        console.log(item)
+        item[1].$refs.BaseInput.focus();
+        item[1].$refs.BaseInput.blur();
+        item[1].isShowMsg = false;
+
         if (item[1].invalid == true) {
           isValid = false;
           me.indexInvalid.push(index);
@@ -296,27 +338,36 @@ export default {
       });
       if (isValid == false) {
         // Hiển thị popup cảnh báo dữ liệu không hợp lệ
-        var errorMsg = Object.entries(this.$refs)[this.indexInvalid[0]][1].title;
-        //this.setPopup(errorMsg, 'error', 'validateEmpty')
-        alert(errorMsg);
+        this.addToast({ type: "error", message: "Dữ liệu không hợp lệ" });
+
+        Object.entries(this.$refs)[
+          this.indexInvalid[0]
+        ][1].$refs.BaseInput.focus();
+
+        Object.entries(this.$refs)[this.indexInvalid[0]][1].isShowMsg = true;
+        console.log(Object.entries(this.$refs)[this.indexInvalid[0]]);
       }
-      return false;
+      return isValid;
     },
     async addCamera() {
       var valid = this.validate();
+      console.log(valid);
       if (valid == true) {
         try {
           this.camera = { ...this.camera, stationId: this.station.stationId };
           const res = await CameraApi.add(this.camera);
           console.log(res);
-          if (res.status === 200) {
-            alert("Thêm thành công");
+          if (res.status === 201) {
+            this.addToast({ type: "success", message: "Thêm thành công" });
+            this.reloadData();
+          } else if (res.status === 400) {
+            this.addToast({ type: "warning", message: "Dữ liệu không hợp lệ" });
           }
-          this.reloadData();
         } catch (error) {
-          alert("Có lỗi xảy ra" + error);
+          this.addToast({ type: "error", message: "Có lỗi xảy ra" });
+          console.log(error.statusCode)
         }
-      }
+      } 
     },
     async updateCamera() {
       try {
@@ -324,11 +375,16 @@ export default {
         console.log(this.camera);
         const res = await CameraApi.update(this.camera.id, this.camera);
         console.log(res);
-
+        if (res.status === 200) {
+          this.addToast({ type: "success", message: "Sửa thành công" });
+          this.reloadData();
+        } else if (res.status === 400) {
+          this.addToast({ type: "warning", message: "Dữ liệu không hợp lệ" });
+        }
         alert("Cập nhật thành công");
         this.reloadData();
       } catch (error) {
-        alert("Có lỗi xảy ra" + error);
+        this.addToast({ type: "error", message: "Có lỗi xảy ra" });
       }
     },
     resetForm() {
@@ -347,7 +403,7 @@ export default {
         this.totalPages = res.data.totalPages;
         this.totalRecords = res.data.totalRecords;
       } catch (error) {
-        alert("Có lỗi xảy ra" + error);
+        this.addToast({ type: "error", message: "Có lỗi xảy ra" });
       }
     },
     async getCameraFilter(inputSearch) {
@@ -379,16 +435,6 @@ export default {
       );
       this.cameras = res.data.records;
     },
-    onBlur(e) {
-      if (e.value == "") {
-        e.invalid = true;
-        e.title = "Trường này không được để trống";
-        e.classList.add("border-red");
-      } else {
-        e.invalid = false;
-        e.title = "";
-      }
-    },
   },
 };
 </script>
@@ -399,6 +445,7 @@ export default {
   position: relative;
   border: 1px gray solid;
   padding: 10px;
+  height: 320px;
 }
 .info-form .title {
   position: absolute;
@@ -454,6 +501,9 @@ export default {
   display: flex;
 
   align-items: center;
+}
+.input-acc > div {
+  flex: 1;
 }
 select {
   height: calc(1.8125rem + 2px);
