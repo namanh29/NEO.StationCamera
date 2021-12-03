@@ -40,6 +40,7 @@ export default {
 </script>
 <style scoped>
 .body{
-  height: calc(100vh - 60px);
+  /* height: calc(100vh - 60px); */
+  flex: 1;
 }
 </style>

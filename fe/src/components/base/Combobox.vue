@@ -262,7 +262,7 @@ export default {
 
 .combobox .combobox-text {
   height: 100%;
-  width: calc(100% - 32px);
+  width: calc(100% - 35px);
   padding: 0 10px;
   outline: none;
   border: none;
@@ -273,7 +273,7 @@ export default {
 }
 .combobox button {
   height: 100%;
-  width: 32px;
+  width: 35px;
   border: none;
   outline: none;
   background-color: #fff;
@@ -306,6 +306,8 @@ export default {
   border: 1px solid #babec5;
   border-radius: 2px;
   padding: 2px 0;
+  max-height: 250px;
+  overflow: auto;
 }
 
 .combobox .combobox-list .combobox-item {

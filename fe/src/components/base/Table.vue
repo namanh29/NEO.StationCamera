@@ -16,11 +16,10 @@
           />
           <select
             v-else-if="field.typeSearch === 'select'"
-            name="--Không chọn--"
             v-model="inputSearch[field.name]"
             @change="onChangeSelect"
           >
-            <option disabled value="">--Không chọn--</option>
+            <option value="">--Không chọn--</option>
             <option
               v-for="(item, index) in field.items"
               :key="index"
@@ -100,6 +99,9 @@ td {
   white-space: nowrap;
   border-bottom: 1px solid #bbb;
   border-right: 1px solid #bbb;
+}
+td {
+  white-space: nowrap;
 }
 
 td:nth-child(1) {

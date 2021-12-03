@@ -21,14 +21,7 @@
         </div>
         <div class="input-label m-b-30">
           <div class="label">Tên Camera <span>*</span></div>
-          <!-- <input
-            class="input-box"
-            type="text"
-            v-model="camera.cameraName"
-            @blur="onBlur($event.target)"
-            ref="input1"
-            :invalid="false"
-          /> -->
+
           <Input
             label="Tên camera"
             type="text"
@@ -40,13 +33,7 @@
       <div class="form-row">
         <div class="input-label m-b-30">
           <div class="label">Vị trí lắp đặt <span>*</span></div>
-          <!-- <input
-            class="input-box"
-            type="text"
-            v-model="camera.position"
-            @blur="onBlur($event.target)"
-            ref="input2"
-          /> -->
+
           <Input
             label="Vị trí"
             type="text"
@@ -56,13 +43,7 @@
         </div>
         <div class="input-label m-b-30">
           <div class="label">Camera Ip <span>*</span></div>
-          <!-- <input
-            class="input-box"
-            type="text"
-            v-model="camera.cameraIp"
-            @blur="onBlur($event.target)"
-            ref="input3"
-          /> -->
+
           <Input
             label="Camera Ip"
             type="text"
@@ -85,13 +66,6 @@
         <div class="input-label m-b-30">
           <div class="label">User/Pass đăng nhập <span>*</span></div>
           <div class="input-acc">
-            <!-- <input
-              class="input-box acc"
-              type="text"
-              v-model="camera.userLogin"
-              @blur="onBlur($event.target)"
-              ref="input4"
-            /> -->
             <Input
               label="User đăng nhập"
               type="text"
@@ -99,13 +73,7 @@
               ref="input4"
             />
             <span>/</span>
-            <!-- <input
-              class="input-box acc"
-              type="password"
-              v-model="camera.passLogin"
-              @blur="onBlur($event.target)"
-              ref="input5"
-            /> -->
+
             <Input
               label="Pass đăng nhập"
               type="password"
@@ -119,29 +87,25 @@
 
     <div class="wrap-button">
       <Button
-        v-if="state === 'add'"
-        class="btn"
+        v-show="state === 'add'"
         text="Thêm"
-        icon="fas fa-plus"
+        icon="add"
         @click="addCamera"
       />
       <Button
-        v-if="state === 'edit'"
-        class="btn"
+        v-show="state === 'edit'"
         text="Cập nhật"
-        icon="fas fa-edit"
+        icon="edit"
         @click="updateCamera"
       />
       <Button
-        class="btn"
         text="Làm mới"
-        icon="fas fa-redo"
+        icon="reset"
         @click="resetForm"
       />
       <Button
-        class="btn"
         text="Quay Lại"
-        icon="fas fa-long-arrow-alt-left"
+        icon="back"
         @click="closeScreen"
       />
     </div>
@@ -182,6 +146,7 @@
         />
       </div>
     </div>
+    <Loader v-if="isShowLoader" />
   </div>
 </template>
 
@@ -249,6 +214,8 @@ export default {
       },
 
       indexInvalid: [],
+
+      isShowLoader: false
     };
   },
 
@@ -281,6 +248,8 @@ export default {
     ...mapActions(["addToast"]),
     ...mapMutations(["setToast"]),
     async createData() {
+      var me = this
+      this.isShowLoader = true
       try {
         const promise = await Promise.all([
           CameraApi.getPagingAndFilter(
@@ -296,7 +265,9 @@ export default {
         this.totalPages = promise[0].data.totalPages;
         this.totalRecords = promise[0].data.totalRecords;
         this.instrumentations = await promise[1].data;
-        var me = this;
+
+        setTimeout(()=>this.isShowLoader = false, 400)
+        
         this.instrumentations.forEach(function (item, index) {
           me.instrumentationCombobox[index] = {
             value: item.insId,
@@ -338,7 +309,7 @@ export default {
       });
       if (isValid == false) {
         // Hiển thị popup cảnh báo dữ liệu không hợp lệ
-        this.addToast({ type: "error", message: "Dữ liệu không hợp lệ" });
+        this.addToast({ type: "warning", message: "Dữ liệu không hợp lệ" });
 
         Object.entries(this.$refs)[
           this.indexInvalid[0]
@@ -360,31 +331,44 @@ export default {
           if (res.status === 201) {
             this.addToast({ type: "success", message: "Thêm thành công" });
             this.reloadData();
-          } else if (res.status === 400) {
-            this.addToast({ type: "warning", message: "Dữ liệu không hợp lệ" });
+            this.resetForm();
+          } else {
+            this.addToast({
+              type: "warning",
+              message: "Thêm không thành công",
+            });
           }
         } catch (error) {
-          this.addToast({ type: "error", message: "Có lỗi xảy ra" });
-          console.log(error.statusCode)
+          this.addToast({
+            type: "error",
+            message: error.response.data.message,
+          });
         }
-      } 
+      }
     },
     async updateCamera() {
-      try {
-        this.camera = { ...this.camera, stationId: this.station.stationId };
-        console.log(this.camera);
-        const res = await CameraApi.update(this.camera.id, this.camera);
-        console.log(res);
-        if (res.status === 200) {
-          this.addToast({ type: "success", message: "Sửa thành công" });
+      var valid = this.validate();
+      if (valid == true) {
+        try {
+          this.camera = { ...this.camera, stationId: this.station.stationId };
+          console.log(this.camera);
+          const res = await CameraApi.update(this.camera.id, this.camera);
+          console.log(res);
+          if (res.status === 200) {
+            this.addToast({ type: "success", message: "Sửa thành công" });
+            this.reloadData();
+          } else {
+            this.addToast({ type: "warning", message: "Sửa không thành công" });
+          }
           this.reloadData();
-        } else if (res.status === 400) {
-          this.addToast({ type: "warning", message: "Dữ liệu không hợp lệ" });
+          this.resetForm();
+          this.state = 'add'
+        } catch (error) {
+          this.addToast({
+            type: "error",
+            message: error.response.data.message,
+          });
         }
-        alert("Cập nhật thành công");
-        this.reloadData();
-      } catch (error) {
-        this.addToast({ type: "error", message: "Có lỗi xảy ra" });
       }
     },
     resetForm() {
@@ -409,31 +393,38 @@ export default {
     async getCameraFilter(inputSearch) {
       this.cameras = [];
       this.currentPage = 1;
-
       this.cameraFilter = inputSearch;
-      const res = await CameraApi.getPagingAndFilter(
-        this.station.stationId,
-        inputSearch,
-        this.currentPage,
-        this.perPage
-      );
-      this.totalPages = res.data.totalPages;
-      this.totalRecords = res.data.totalRecords;
-      this.cameras = res.data.records;
-      console.log(res.data);
+      try {
+        const res = await CameraApi.getPagingAndFilter(
+          this.station.stationId,
+          inputSearch,
+          this.currentPage,
+          this.perPage
+        );
+        this.totalPages = res.data.totalPages;
+        this.totalRecords = res.data.totalRecords;
+        this.cameras = res.data.records;
+        console.log(res.data);
+      } catch (error) {
+        this.addToast({ type: "error", message: "Có lỗi xảy ra" });
+      }
     },
 
     async onPageChange(page) {
       console.log(page);
       this.currentPage = page;
       this.cameras = [];
-      const res = await CameraApi.getPagingAndFilter(
-        this.station.stationId,
-        this.cameraFilter,
-        page,
-        this.perPage
-      );
-      this.cameras = res.data.records;
+      try {
+        const res = await CameraApi.getPagingAndFilter(
+          this.station.stationId,
+          this.cameraFilter,
+          page,
+          this.perPage
+        );
+        this.cameras = res.data.records;
+      } catch (error) {
+        this.addToast({ type: "error", message: "Có lỗi xảy ra" });
+      }
     },
   },
 };
@@ -441,7 +432,7 @@ export default {
 
 <style scoped>
 .info-form {
-  margin: 15px 7.5px 0 7.5px;
+  margin: 16px 16px 0 16px;
   position: relative;
   border: 1px gray solid;
   padding: 10px;
@@ -494,7 +485,7 @@ export default {
   display: flex;
   justify-content: center;
 }
-.wrap-button .btn {
+.wrap-button button {
   margin: 0.5em 1em;
 }
 .input-acc {

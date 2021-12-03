@@ -10,6 +10,7 @@ import Pagination from './components/base/Pagination'
 import Combobox from './components/base/Combobox'
 import Input from './components/base/Input'
 import ToastMessage from './components/base/ToastMessage'
+import Loader from './components/base/Loader'
 
 Vue.use(Vuex)
 
@@ -22,6 +23,7 @@ Vue.component("Pagination", Pagination)
 Vue.component("Combobox", Combobox)
 Vue.component("Input", Input)
 Vue.component("ToastMessage", ToastMessage)
+Vue.component("Loader", Loader)
 
 Vue.config.productionTip = false
 

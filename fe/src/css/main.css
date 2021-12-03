@@ -3,6 +3,11 @@
     margin: 0;
     padding: 0;
 }
+html, body
+{
+    height: 100%;
+    min-height: 100%;
+}
 .m-r-4 {
     margin-right: 4px;
 }

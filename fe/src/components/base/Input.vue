@@ -1,16 +1,16 @@
 <template>
   <div>
-  <input
-    class="input-box acc"
-    :class="{ 'border-red': invalid }"
-    :type="type"
-    :value="valueFormat"
-    :title="message"
-    @input="updateValue($event.target.value)"
-    @blur="onBlur($event.target)"
-    ref="BaseInput"
-  />
-  <div v-show="isShowMsg" class="msg" ref="Message">{{message}}</div>
+    <input
+      class="input-box acc"
+      :class="{ 'border-red': invalid }"
+      :type="type"
+      :value="value"
+      :title="message"
+      @input="updateValue($event.target.value)"
+      @blur="onBlur($event.target)"
+      ref="BaseInput"
+    />
+    <div v-show="isShowMsg" class="msg" ref="Message">{{ message }}</div>
   </div>
 </template>
 
@@ -49,19 +49,8 @@ export default {
       invalid: false,
       message: "",
       textAlign: "",
-      isShowMsg: false
+      isShowMsg: false,
     };
-  },
-  computed: {
-    // format lại value
-    valueFormat() {
-      switch (this.field) {
-        case "salary":
-          return this.formatCurrency(this.value?.toString());
-        default:
-          return this.value;
-      }
-    },
   },
 
   methods: {
@@ -77,7 +66,7 @@ export default {
       if (this.required == true) {
         if (e.value == "") {
           this.invalid = true;
-          this.message = `${this.label} không được để trống`
+          this.message = `${this.label} không được để trống`;
         } else {
           this.invalid = false;
           this.message = "";
