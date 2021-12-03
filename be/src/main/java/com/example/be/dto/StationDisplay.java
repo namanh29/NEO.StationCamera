@@ -23,4 +23,23 @@ public class StationDisplay {
     private String riverName;
     private String address;
     private Integer isActive;
+    private String isActiveText;
+
+    public StationDisplay(String stationId, String objectType, String objectTypeShortname, String stationCode, String stationName, String longtitude, String latitude, String provinceName, String districtName, String wardName, String riverName, String address, Integer isActive) {
+        this.stationId = stationId;
+        this.objectType = objectType;
+        this.objectTypeShortname = objectTypeShortname;
+        this.stationCode = stationCode;
+        this.stationName = stationName;
+        this.longtitude = longtitude;
+        this.latitude = latitude;
+        this.provinceName = provinceName;
+        this.districtName = districtName;
+        this.wardName = wardName;
+        this.riverName = riverName;
+        this.address = address;
+        this.isActive = isActive;
+        if(this.isActive == 1) this.isActiveText = "Đang hoạt động";
+        else this.isActiveText = "Không hoạt động";
+    }
 }

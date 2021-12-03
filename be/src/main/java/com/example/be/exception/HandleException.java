@@ -45,6 +45,7 @@ public class HandleException {
         ErrorMessage errorMessage = new ErrorMessage(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 new Date(),
+                //"Có lỗi xảy ra",
                 e.getMessage(),
                 request.getDescription(false)
         );
@@ -53,7 +54,7 @@ public class HandleException {
 
     @ExceptionHandler(ResourceDuplicateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorMessage globalExceptionHandler(ResourceDuplicateException e, WebRequest request){
+    public ErrorMessage resourceDuplicateException(ResourceDuplicateException e, WebRequest request){
         ErrorMessage errorMessage = new ErrorMessage(
                 HttpStatus.BAD_REQUEST.value(),
                 new Date(),
